@@ -162,4 +162,29 @@ $ git rebase --abort
 __Remember:__ Only squash commits that are in your local repository and have not been published yet.
 
 ## Avoiding merge commits
-TODO
+
+Merge commits are not necessarily bad. Sometimes you want it to be clear that there was a branch was merged into another. For example, we want to know when we merge to the staging or production branches. For most situation though, you generally want to avoid merge commits because they clatter the log and get in the way of the commits that really matter. There are two situations when you would want to avoid the merge commit and this can be achieved with rebasing.
+
+The first situation is when you are working on a branch, finished your work and are ready to push it to the remote repo. There may be a case when somebody else has pushed code before you. If you pull the changes, they will be merged into your repository. The status then will be that you are at least two commits ahead of the remote branch. One of those commits is the merge commit. The tool that you can use to avoid this is to do a 
+```
+$ git pull --rebase
+```
+What git does is that it fetches the changes from the remote, figures out the diff, applies it, and then applies your commits on top. History will write that your changes where made afterwards.
+
+In case of conflicts, git will ask you to resolve them (just as it would do with a merge). Make sure you don't delete the conflicting files in the commit comment and then tell git to continue with the rebasing. No merge commit there. Yay!
+
+The other situation is when you have made changes to different branches and you want to apply them all. 
+
+![Initial diverged commit history](rebase-3.png)
+
+What you want to do is
+```
+$ git checkout experiment
+$ git rebase master
+First, rewinding head to replay your work on top of it...
+Applying: added staged command
+```
+
+This is the simplest rebase scenario, and possibly the most common you will encounter. For more details on rebasing, you can look at the [rebasing chapter](http://git-scm.com/book/en/Git-Branching-Rebasing) in the ProGit book.
+
+__Remember:__ You should not rebase commits that have already been pushed into remote branches. Unless you are sure nobody else has pulled your code (which is probably impossible) in which case you have to force-push your changes upstream.
