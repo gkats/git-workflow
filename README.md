@@ -4,7 +4,7 @@ So, you are all comfy at your couch, the beer is cold, you are starving but you 
 
 It is these simple things in life that make everybody happy. You can make the people you work with happy by tidying up after yourself and git lets you do this really easy. What follows is some very simple techniques to make sure you achieve an awesome git workflow.
 
-![alt text](git-r-done.gif)
+![Git-R-Done](git-r-done.gif)
 
 ## Table of Contents
 
@@ -97,4 +97,69 @@ Do not assume that the reader understands the original problem or knows the cont
 Refrain from trying to reproduce the feature description or specs in the commit message. Just try to describe your changes and the rationale behind them in simple English. Take your time when commiting, read your message out loud so that you know it makes sense.
 
 ## Commit often, push once
+ 
+Consider git as a more powerful undo command. You can keep track of all your changes and revert to a previous state easily. You should commit often, so you have more control in what changes you pick and how many steps back a revert will get you at.
+
+Many times you start making changes and at some point you introduce a really nasty bug that breaks everything. Since you don't know the cause of the problem, you should allow yourself to feel secure by having a stable state you can always revert to. So, break down what needs to be done in small tasks. Every time you finish a task, commit. Don't introduce large scale change in one go.
+
+Other times you work on a problem but the solution is not obvious. You start playing around with stuff to see how they respond. This state of prototyping can introduce errors. It's good to have sequential progress that you can revert to.
+
+Be careful when you publish to the remote repo. Once you push something upstream you cannot take it back. You can always correct things with additional commits, but by spending time organizing your work your commits are more coherent and consistent. The reviewer is able to go through the changes only once. Nobody likes looking at this log output
+
+```
+* 63bb2f3 - Completed payments feature
+* 6c7aa9d - Changes in CSS for payments
+```
+
+Before you push you can rebase locally and use the squash option to combine commits into one. Suppose you have the above commits. You can do a 
+
+```
+$ git rebase -i HEAD~2
+```
+
+and you'll be presented with instructions in your editor on how to proceed.
+
+```
+pick 63bb2f3 - Completed payments feature
+pick 6c7aa9d - Changes in CSS for payments
+# Rebase 6c7aa9d..63bb2f3 onto 63bb2f3
+#
+# Commands:
+#  p, pick = use commit
+#  r, reword = use commit, but edit the commit message
+#  e, edit = use commit, but stop for amending
+#  s, squash = use commit, but meld into previous commit
+#  f, fixup = like "squash", but discard this commit's log message
+#  x, exec = run command (the rest of the line) using shell
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+# However, if you remove everything, the rebase will be aborted.
+#
+# Note that empty commits are commented out
+
+```
+
+In order to squash, you `pick` the first commit and then you change the `pick` text with `squash` or `s` for the commits you want to squash into the first. You can also edit the _single_ commit message and when you save, git will rewrite history by finding the common ancestors of the commits, applying the diff and assigning a new commit hash to the patch. For as long as you rebase your `HEAD` is in a detached state. The situation is better explained in the following images
+
+![Rebasing C3 into C4](rebase-1.png)
+
+All that's left to be done is a fast-forward in the master branch
+
+![Fast-forwarding the master branch](rebase-2.png)
+
+In case there are conflicts you can resolve them and then do a 
+```
+$ git rebase --cont
+```
+In the event that something goes wrong you can go back to the original `HEAD` by doing
+```
+$ git rebase --abort
+```
+
+__Remember:__ Only squash commits that are in your local repository and have not been published yet.
+
+## Avoiding merge commits
 TODO
