@@ -18,13 +18,11 @@ It is these simple things in life that make everybody happy. You can make the pe
   * try to squash commits for whole feature, or many commits under the same concept
 * [Avoiding merge commits](#avoiding-merge-commits)
   * pull --rebase, when can you use it?
-* [Rebasing](#rebasing)
-  * published changes, explanatory diagram
 * [Cherry picking](#cherry-picking)
   * also for ranges
 * [Tagging](#tagging)
 * [Stashing](#stashing)
-* [Bisect](#bisect)
+* [Debugging](#debugging)
 * [Frequently used commands](#frequently-used-commands)
   * git branch -r, log .., show
 * [Shortcuts](#shortcuts)
@@ -188,3 +186,39 @@ Applying: added staged command
 This is the simplest rebase scenario, and possibly the most common you will encounter. For more details on rebasing, you can look at the [rebasing chapter](http://git-scm.com/book/en/Git-Branching-Rebasing) in the ProGit book.
 
 __Remember:__ You should not rebase commits that have already been pushed into remote branches. Unless you are sure nobody else has pulled your code (which is probably impossible) in which case you have to force-push your changes upstream.
+
+## Debugging
+
+You can use git to help you track down when and where a bug was introduced in the codebase. The tools that you use are `git blame` and `git bisect`.
+
+### blame
+
+If you issue a 
+```
+$ git blame -L 1,10 afile
+```
+git will present the file `afile` with annotations in each line. These annotations show when was the last time each line was changed, the commit hash and the name of the person who made the change. You can limit the output to lines 1-10 with the `-L` switch. Another cool feature is the `-C` switch; git will even show the original file that sections of the code came from.
+
+### bisect
+
+There are sometimes where a regression bug gets introduced in the codebase and nobody notices till later on. Before starting the bug hunt, the first thing you should do is write a test that reproduces it. If you don't know where to look for, git can perform a binary search in the codebase history to help you find which commit introduced the bug. 
+
+You set the process off with `git bisect off` and then you run `git bisect bad` to tell git that the current commit you are on is problematic. Then you have to tell git the last known good state of your codebase with `git bisect good [good_commit_hash]`. If you are totally uncertain about which the last good state was you should fall back to the last release. Don't worry if it feels you're going way back. Git is fast.
+```
+$ git bisect start
+$ git bisect bad
+$ git bisect good v1.0
+Bisecting: 6 revisions left to test after this
+[ecb6e1bc347ccecc5f9350d878ce677feb13d3b2] error handling on repo
+```
+Git found out there are 12 commits between the latest and the commit tagged with v1.0 and checked out the middle one. Your `HEAD` will now be in a detached state, but you should run your test to see if it still fails. If it passes, you should look further. You tell git that everything's good with `git bisect good` and you continue the search.
+```
+$ git bisect good
+Bisecting: 3 revisions left to test after this
+[b047b02ea83310a70fd603dc8cd7a6cd13d15c04] secure this thing
+```
+You run your test again and you are lucky. The test fails, so you know that the bug was introduced in this commit. You inform git with `git bisect bad` and once you have all the required information you issue a
+```
+$ git bisect reset
+```
+to return your `HEAD` to the latest state. Now you know where to look for the bug, so let's get it fixed :).
