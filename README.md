@@ -27,7 +27,7 @@ It is these simple things in life that make everybody happy. You can make the pe
   * git branch -r, log .., show
 * [Shortcuts](#shortcuts)
   * aliases
-* [Git flow](#gitflow)
+* [Git flow](#git-flow)
 * [Resources](#resources)
 
 ## An introduction
