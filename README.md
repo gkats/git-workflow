@@ -27,7 +27,7 @@ It is these simple things in life that make everybody happy. You can make the pe
   * git branch -r, log .., show
 * [Shortcuts](#shortcuts)
   * aliases
-* [GitFlow](#gitflow)
+* [Git flow](#gitflow)
 * [Resources](#resources)
 
 ## An introduction
@@ -222,3 +222,38 @@ You run your test again and you are lucky. The test fails, so you know that the 
 $ git bisect reset
 ```
 to return your `HEAD` to the latest state. Now you know where to look for the bug, so let's get it fixed :).
+
+## Git flow
+
+This section provides an overview of a sample workflow when working with teams. It is based on [GitFlow](https://datasift.github.io/gitflow/IntroducingGitFlow.html) with small changes in the details. The main idea is that all work should be made in separate feature branches. 
+
+__Rule no. 1__: There is a long-lived branch which should be deployable at any given time.
+__Rule no. 2__: Only feature branches and hotfixes can be merged in the long-lived branch.
+
+### The goal
+
+Chances are that in your organization you have people that request things, people that implement them and people that test the implementation and either accept or reject it. Most of the times people have distinct roles in Product and Engineering teams, but this need not always be the case.
+
+The path is always the same though; `feature -> implementation -> approval -> release`. Yeah, right, in a perfect world it might be this way. Reality is often harsh. An implementation gets rejected at the last minute and needs to be reworked, or it is decided that we don't want a feature any more and it should not be released. That's why you can always be prepared if you keep work isolated from the rest of the code base until the final approval.
+
+### The long-lived branch
+
+To begin with, your project should have a long lived branch. This branch is usually called `master`. The long lived branch is the one that gets released to production. Every time you need to work on something (feature, bug, tech debt) you create a new branch based on `master`. This way you can make sure that your work is based on production code. It also gives you the chance to keep your work isolated. 
+
+Once you finish your work you need to publish it so it can get approval. You could merge the feature branch in the `master` branch, but that would violate Rule no. 1 above. Hopefully there is an environment where you can upload things for testing without caring if it breaks or not. Most people call this the "staging" environment. You could potentially deploy your feature branch on the staging environment and ask somebody to test it. But what if there are a lot of people who want their implementations tested? We would have to block the whole pipeline until each feature is tested sequentially.
+
+### The staging branch
+
+This is where a second long-lived branch comes into play, usually called `staging`. This branch serves the purpose of accumulating all changes that need to be tested before a release. It allows testers to work in parallel. Another benefit is that it allows for quick merges, thus reducing regression bugs or conflicts with other feature work.
+
+The `staging` branch acts as a bucket of changes. We shouldn't be too concerned about this branch's history or well being. It could be destroyed at any time or rebuilt. Its history could be rewritten. Some people with a more strict release schedule (say one release every week) prefer to have short-lived release branches for this purpose. No matter how you do this, there is one important thing to keep in mind. Feature branches can be merged in the release/staging branch, but all feature pull requests should be against the `master` branch. This way, if we decide that we don't want to release a feature after all, or a feature got rejected at the last minute and we want to exclude it from the release, we can still release all accepted features by merging their respective pull requests to master.
+
+The `staging` branch can be rebased frequently on `master`, so it's as close to production code as possible at all times.
+
+### Hotfixes
+
+Hotfixes can benefit greatly from the above. You can quickly branch off master, deploy your hotfix branch to the staging environment, get approval, merge into master and deploy. You can then safely restore staging back to its original state by just deploying the `staging` branch. You should merge your hotfix branch on `staging` too.
+
+### Bigger changes
+
+Sometimes there is a big release coming up, or you need to split your work in more tasks, with each task depending on the previous one. A solution to this would be to create a bigger feature branch, or a release branch. Each one of the small tasks should be targeted against the release branch, allowing you to integrate your changes often. This "small" release branch can then be treated as a regular feature branch, no matter how many tasks it touches upon.
