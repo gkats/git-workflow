@@ -228,6 +228,7 @@ to return your `HEAD` to the latest state. Now you know where to look for the bu
 This section provides an overview of a sample workflow when working with teams. It is based on [GitFlow](https://datasift.github.io/gitflow/IntroducingGitFlow.html) with small changes in the details. The main idea is that all work should be made in separate feature branches. 
 
 __Rule no. 1__: There is a long-lived branch which should be deployable at any given time.
+
 __Rule no. 2__: Only feature branches and hotfixes can be merged in the long-lived branch.
 
 ### The goal
